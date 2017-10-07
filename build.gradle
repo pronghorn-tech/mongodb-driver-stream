@@ -1,0 +1,60 @@
+buildscript {
+    ext {
+        kotlinVersion = '1.1.51'
+    }
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
+    }
+}
+
+group 'tech.pronghorn'
+version '0.1.2'
+
+apply plugin: 'kotlin'
+apply plugin: 'org.junit.platform.gradle.plugin'
+apply plugin: 'maven'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom {
+                artifactId = 'mongodb-driver-stream'
+            }
+            pom.project {
+                name 'Pronghorn MongoDB Driver Stream'
+                packaging 'jar'
+                description 'Allows using Pronghorn as the IO handler for the MongoDB Async Driver.'
+                url 'https://pronghorn.tech'
+                scm {
+                    url 'https://github.com/pronghorn-tech/mongodb-driver-stream.git'
+                    connection 'scm:git@github.com:pronghorn-tech/mongodb-driver-stream.git'
+                    developerConnection 'scm:git@github.com:pronghorn-tech/mongodb-driver-stream.git'
+                }
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    compile "tech.pronghorn:server:$version"
+    compile 'org.mongodb:mongodb-driver-async:3.5.0'
+
+    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.0.0'
+    testCompile 'org.mockito:mockito-core:2.10.0'
+    testRuntime 'ch.qos.logback:logback-classic:1.2.3'
+    testCompile "tech.pronghorn:plugin-collections-jctools:$version"
+    testCompile "tech.pronghorn:plugin-hashing-openhft:$version"
+    testCompile "tech.pronghorn:plugin-logging-slf4j:$version"
+}
