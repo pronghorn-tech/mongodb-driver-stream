@@ -22,10 +22,10 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicInteger
 
-class PronghornByteBuf(private val managed: ManagedByteBuffer) : ByteBuf {
+internal class PronghornByteBuf(private val managed: ManagedByteBuffer) : ByteBuf {
     private val buffer = managed.buffer
     private val referenceCount = AtomicInteger(1)
-    var alreadyRead = 0
+    internal var alreadyRead = 0
 
     override fun asNIO(): ByteBuffer = buffer
 
@@ -63,7 +63,7 @@ class PronghornByteBuf(private val managed: ManagedByteBuffer) : ByteBuf {
 
     override fun array(): ByteArray = buffer.array()
 
-    override fun getInt(): Int = buffer.getInt()
+    override fun getInt(): Int = buffer.int
 
     override fun getInt(index: Int): Int = buffer.getInt(index)
 
@@ -81,7 +81,7 @@ class PronghornByteBuf(private val managed: ManagedByteBuffer) : ByteBuf {
         return this
     }
 
-    override fun getLong(): Long = buffer.getLong()
+    override fun getLong(): Long = buffer.long
 
     override fun getLong(index: Int) = buffer.getLong(index)
 
@@ -130,7 +130,7 @@ class PronghornByteBuf(private val managed: ManagedByteBuffer) : ByteBuf {
         }
     }
 
-    override fun getDouble(): Double = buffer.getDouble()
+    override fun getDouble(): Double = buffer.double
 
     override fun getDouble(index: Int): Double = buffer.getDouble(index)
 

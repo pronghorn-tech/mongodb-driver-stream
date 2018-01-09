@@ -19,13 +19,13 @@ package tech.pronghorn.mongodb
 import com.mongodb.connection.AsyncCompletionHandler
 import org.bson.ByteBuf
 
-sealed class MultiplexMongoDBStatus
+internal sealed class MultiplexMongoDBStatus
 
-object Idle : MultiplexMongoDBStatus()
+internal object Idle : MultiplexMongoDBStatus()
 
-class HeaderOutstanding(val handler: AsyncCompletionHandler<ByteBuf>) : MultiplexMongoDBStatus()
+internal class HeaderOutstanding(internal val handler: AsyncCompletionHandler<ByteBuf>) : MultiplexMongoDBStatus()
 
-object HeaderReturned : MultiplexMongoDBStatus()
+internal object HeaderReturned : MultiplexMongoDBStatus()
 
-class DataOutstanding(val numBytes: Int,
-                      val handler: AsyncCompletionHandler<ByteBuf>) : MultiplexMongoDBStatus()
+internal class DataOutstanding(internal val numBytes: Int,
+                               internal val handler: AsyncCompletionHandler<ByteBuf>) : MultiplexMongoDBStatus()

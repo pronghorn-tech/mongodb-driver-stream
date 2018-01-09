@@ -16,12 +16,12 @@
 
 package tech.pronghorn.mongodb
 
-import tech.pronghorn.coroutines.service.InternalQueueService
+import tech.pronghorn.coroutines.services.InternalQueueService
 import tech.pronghorn.server.HttpServerWorker
 
-class MultiplexMongoDBService(override val worker: HttpServerWorker) : InternalQueueService<MultiplexMongoDBSocket>() {
+internal class MultiplexMongoDBService(override val worker: HttpServerWorker) : InternalQueueService<MultiplexMongoDBSocket>() {
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-    suspend override fun process(multiplex: MultiplexMongoDBSocket): Boolean {
+    override suspend fun process(multiplex: MultiplexMongoDBSocket): Boolean {
         multiplex.process()
         return true
     }

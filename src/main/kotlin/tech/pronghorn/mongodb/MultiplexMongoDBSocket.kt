@@ -19,7 +19,7 @@ package tech.pronghorn.mongodb
 import com.mongodb.ServerAddress
 import com.mongodb.connection.*
 import org.bson.ByteBuf
-import tech.pronghorn.coroutines.awaitable.QueueWriter
+import tech.pronghorn.coroutines.awaitable.queue.InternalQueue
 import tech.pronghorn.coroutines.core.ReadWriteConnectSelectionKeyHandler
 import tech.pronghorn.mongodb.bytesbufs.ManagedByteBuf
 import tech.pronghorn.mongodb.bytesbufs.PronghornByteBuf
@@ -32,13 +32,13 @@ import java.nio.ByteBuffer
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 
-const val MONGODB_HEADER_SIZE = 36
+internal const val MONGODB_HEADER_SIZE = 36
 
-class MultiplexMongoDBSocket(private val factory: MultiplexMongoDBStreamFactory,
-                             private val worker: HttpServerWorker,
-                             private val serviceWriter: QueueWriter<MultiplexMongoDBSocket>,
-                             private val socketSettings: SocketSettings,
-                             val serverAddress: ServerAddress): ReadWriteConnectSelectionKeyHandler {
+internal class MultiplexMongoDBSocket(private val factory: MultiplexMongoDBStreamFactory,
+                                      private val worker: HttpServerWorker,
+                                      private val serviceWriter: InternalQueue.Writer<MultiplexMongoDBSocket>,
+                                      private val socketSettings: SocketSettings,
+                                      internal val serverAddress: ServerAddress) : ReadWriteConnectSelectionKeyHandler {
     private val socket = createSocket()
     private var selectionKey: SelectionKey? = null
     private val bufferPool = ReusableBufferPoolManager(kibibytes(64), worker.server.config.useDirectByteBuffers)
@@ -91,11 +91,11 @@ class MultiplexMongoDBSocket(private val factory: MultiplexMongoDBStreamFactory,
         return stream
     }
 
-    fun isClosed(): Boolean = socket.socket().isClosed
+    public fun isClosed(): Boolean = socket.socket().isClosed
 
-    fun isConnected(): Boolean = socket.socket().isConnected
+    public fun isConnected(): Boolean = socket.socket().isConnected
 
-    fun isConnectionPending(): Boolean = socket.isConnectionPending
+    public fun isConnectionPending(): Boolean = socket.isConnectionPending
 
     internal fun open(handler: AsyncCompletionHandler<Void?>) {
         if (isConnected()) {
@@ -112,24 +112,24 @@ class MultiplexMongoDBSocket(private val factory: MultiplexMongoDBStreamFactory,
     }
 
     private fun enqueueIfNecessary() {
-        if(!isQueued) {
+        if (!isQueued) {
             isQueued = true
             serviceWriter.offer(this)
         }
     }
 
-    override fun handleWrite() {
+    override fun handleWritable() {
         selectionKey?.removeInterestOps(SelectionKey.OP_WRITE)
         isWriteQueued = true
         enqueueIfNecessary()
     }
 
-    override fun handleRead() {
+    override fun handleReadable() {
         isReadQueued = true
         enqueueIfNecessary()
     }
 
-    override fun handleConnect() {
+    override fun handleConnectable() {
         selectionKey?.removeInterestOps(SelectionKey.OP_CONNECT)
         isConnectQueued = true
         enqueueIfNecessary()
@@ -137,13 +137,13 @@ class MultiplexMongoDBSocket(private val factory: MultiplexMongoDBStreamFactory,
 
     internal fun process() {
         isQueued = false
-        if(isReadQueued){
+        if (isReadQueued) {
             processReads()
         }
-        if(isWriteQueued){
+        if (isWriteQueued) {
             processWrites()
         }
-        if(isConnectQueued){
+        if (isConnectQueued) {
             processConnect()
         }
     }
@@ -218,7 +218,7 @@ class MultiplexMongoDBSocket(private val factory: MultiplexMongoDBStreamFactory,
         enqueueIfNecessary()
     }
 
-    tailrec private fun processAvailableReads() {
+    private tailrec fun processAvailableReads() {
         val currentStage = stage
         when (currentStage) {
             Idle -> {

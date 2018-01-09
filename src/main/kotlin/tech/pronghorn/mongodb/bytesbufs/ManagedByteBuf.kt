@@ -19,7 +19,7 @@ package tech.pronghorn.mongodb.bytesbufs
 import org.bson.ByteBufNIO
 import tech.pronghorn.server.bufferpools.ManagedByteBuffer
 
-class ManagedByteBuf(private val managed: ManagedByteBuffer) : ByteBufNIO(managed.buffer) {
+internal class ManagedByteBuf(private val managed: ManagedByteBuffer) : ByteBufNIO(managed.buffer) {
     override fun release() {
         super.release()
         if (referenceCount == 0) {

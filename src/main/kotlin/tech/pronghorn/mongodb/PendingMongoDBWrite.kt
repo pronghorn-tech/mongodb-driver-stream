@@ -19,5 +19,5 @@ package tech.pronghorn.mongodb
 import com.mongodb.connection.AsyncCompletionHandler
 import org.bson.ByteBuf
 
-class PendingMongoDBWrite(val buffers: List<ByteBuf>,
-                          val handler: AsyncCompletionHandler<Void?>)
+internal class PendingMongoDBWrite(internal val buffers: List<ByteBuf>,
+                                   internal val handler: AsyncCompletionHandler<Void?>)
