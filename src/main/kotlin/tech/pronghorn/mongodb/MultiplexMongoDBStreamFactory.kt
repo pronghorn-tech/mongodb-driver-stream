@@ -37,7 +37,7 @@ public class MultiplexMongoDBStreamFactory(private val worker: HttpServerWorker,
 
         if (worker.isWorkerThread()) {
             logger.debug { "Creating ${MultiplexMongoDBService::class.simpleName}, required for ${javaClass.simpleName}" }
-            worker.server.addService { worker -> MultiplexMongoDBService(worker as HttpServerWorker) }
+            worker.server.addService { worker -> MultiplexMongoDBService(worker) }
         }
 
         return worker.getService<MultiplexMongoDBService>()?.getQueueWriter()
