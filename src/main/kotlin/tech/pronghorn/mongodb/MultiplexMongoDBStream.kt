@@ -22,8 +22,8 @@ import com.mongodb.connection.Stream
 import org.bson.ByteBuf
 import java.nio.channels.SocketChannel
 
-class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket,
-                             private val serverAddress: ServerAddress) : Stream {
+internal class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket,
+                                      private val serverAddress: ServerAddress) : Stream {
     private val blockingSocket = SocketChannel.open()
     private var isClosed = false
     private var hasOutstandingHeaderRequest = false
@@ -31,11 +31,11 @@ class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket
     override fun close() {
         multiplexSocket.removeChildStream(this)
 
-        if(isClosed){
+        if (isClosed) {
             return
         }
 
-        if(blockingSocket.isConnected){
+        if (blockingSocket.isConnected) {
             blockingSocket.close()
         }
     }
@@ -55,7 +55,7 @@ class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket
     }
 
     override fun write(buffers: List<ByteBuf>) {
-        if(!blockingSocket.isConnected) {
+        if (!blockingSocket.isConnected) {
             open()
         }
         blockingSocket.write(buffers.map { it.asNIO() }.toTypedArray())
@@ -63,7 +63,7 @@ class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket
 
     override fun writeAsync(buffers: List<ByteBuf>,
                             handler: AsyncCompletionHandler<Void?>) {
-        if(!multiplexSocket.isConnected()){
+        if (!multiplexSocket.isConnected()) {
             openAsync(ForwardedAsyncCompletionHandler {
                 writeAsync(buffers, handler)
             })
@@ -74,7 +74,7 @@ class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket
     }
 
     override fun read(numBytes: Int): ByteBuf {
-        if(!blockingSocket.isConnected) {
+        if (!blockingSocket.isConnected) {
             open()
         }
         val buffer = getBuffer(numBytes)
@@ -88,7 +88,7 @@ class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket
 
     override fun readAsync(numBytes: Int,
                            handler: AsyncCompletionHandler<ByteBuf>) {
-        if(!multiplexSocket.isConnected()){
+        if (!multiplexSocket.isConnected()) {
             openAsync(ForwardedAsyncCompletionHandler {
                 readAsync(numBytes, handler)
             })
@@ -106,7 +106,7 @@ class MultiplexMongoDBStream(private val multiplexSocket: MultiplexMongoDBSocket
     }
 }
 
-class ForwardedAsyncCompletionHandler<T>(private val block: () -> Unit): AsyncCompletionHandler<T> {
+internal class ForwardedAsyncCompletionHandler<T>(private val block: () -> Unit) : AsyncCompletionHandler<T> {
     override fun completed(t: T) {
         block()
     }

@@ -18,34 +18,33 @@ package tech.pronghorn.mongodb
 
 import com.mongodb.ServerAddress
 import com.mongodb.connection.*
-import tech.pronghorn.coroutines.awaitable.QueueWriter
+import tech.pronghorn.coroutines.awaitable.queue.InternalQueue
 import tech.pronghorn.plugins.logging.LoggingPlugin
 import tech.pronghorn.server.HttpServerWorker
 
-class MultiplexMongoDBStreamFactory(private val worker: HttpServerWorker,
-                                    private val socketSettings: SocketSettings,
-                                    private val sslSettings: SslSettings) : StreamFactory {
-    val logger = LoggingPlugin.get(javaClass)
-    val serviceWriter = getMongoDBWriteServiceWriter()
+public class MultiplexMongoDBStreamFactory(private val worker: HttpServerWorker,
+                                           private val socketSettings: SocketSettings,
+                                           private val sslSettings: SslSettings) : StreamFactory {
+    private val logger = LoggingPlugin.get(javaClass)
+    private val serviceWriter = getMongoDBWriteServiceWriter()
+    private val multiplexerMap = mutableMapOf<ServerAddress, MultiplexMongoDBSocket>()
 
-    private fun getMongoDBWriteServiceWriter(): QueueWriter<MultiplexMongoDBSocket> {
+    private fun getMongoDBWriteServiceWriter(): InternalQueue.Writer<MultiplexMongoDBSocket> {
         val writeService = worker.getService<MultiplexMongoDBService>()
-        if(writeService != null){
+        if (writeService != null) {
             return writeService.getQueueWriter()
         }
 
-        if(worker.isWorkerThread()) {
+        if (worker.isWorkerThread()) {
             logger.debug { "Creating ${MultiplexMongoDBService::class.simpleName}, required for ${javaClass.simpleName}" }
             worker.server.addService { worker -> MultiplexMongoDBService(worker) }
         }
 
-        return worker.getServiceQueueWriter<MultiplexMongoDBSocket, MultiplexMongoDBService>() ?:
-                throw IllegalStateException("If ${javaClass.simpleName} is created outside of a worker thread, a ${MultiplexMongoDBService::class.simpleName} service must be added to the application prior to instantiation.")
+        return worker.getService<MultiplexMongoDBService>()?.getQueueWriter()
+                ?: throw IllegalStateException("If ${javaClass.simpleName} is created outside of a worker thread, a ${MultiplexMongoDBService::class.simpleName} service must be added to the application prior to instantiation.")
     }
 
-    private val multiplexerMap = mutableMapOf<ServerAddress, MultiplexMongoDBSocket>()
-
-    internal fun removeMultiplexer(socket: MultiplexMongoDBSocket){
+    internal fun removeMultiplexer(socket: MultiplexMongoDBSocket) {
         multiplexerMap.remove(socket.serverAddress, socket)
     }
 

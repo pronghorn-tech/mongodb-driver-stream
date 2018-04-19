@@ -19,7 +19,7 @@ package tech.pronghorn.mongodb
 import com.mongodb.connection.*
 import tech.pronghorn.server.HttpServerWorker
 
-class MultiplexMongoDBStreamFactoryFactory(private val worker: HttpServerWorker) : StreamFactoryFactory {
+public class MultiplexMongoDBStreamFactoryFactory(private val worker: HttpServerWorker) : StreamFactoryFactory {
     override fun create(socketSettings: SocketSettings, sslSettings: SslSettings): StreamFactory {
         return MultiplexMongoDBStreamFactory(worker, socketSettings, sslSettings)
     }

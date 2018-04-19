@@ -19,8 +19,8 @@ package tech.pronghorn.mongodb.bytesbufs
 import org.bson.ByteBufNIO
 import java.nio.ByteBuffer
 
-class ChildByteBuf(private val parent: PronghornByteBuf,
-                   buffer: ByteBuffer) : ByteBufNIO(buffer) {
+internal class ChildByteBuf(private val parent: PronghornByteBuf,
+                            buffer: ByteBuffer) : ByteBufNIO(buffer) {
     init {
         parent.retain()
     }
